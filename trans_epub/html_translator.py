@@ -164,6 +164,7 @@ def translate_html(
     cached_soup: BeautifulSoup | None = None,
     cached_nodes: list[Tag] | None = None,
     cached_attrs: list | None = None,
+    quality_threshold: int = 80,
 ) -> tuple[bytes, int]:
     """Translate all translatable text nodes in *html_bytes*.
 
@@ -263,6 +264,37 @@ def translate_html(
         translated_sources.extend(src_batch)
         if progress_cb:
             progress_cb(i + 1, total_batches, sum(len(t) for t in batch))
+
+    # ── Quality refinement pass ────────────────────────────────────────────
+    if quality_threshold > 0:
+        from .refiner import check_quality, refine_texts
+
+        node_originals = [texts[j] for j, src in enumerate(all_sources) if src[0] == "node"]
+        node_translated = [
+            translated_all[j]
+            for j, src in enumerate(translated_sources)
+            if src[0] == "node"
+        ]
+        if node_originals:
+            issues_log: dict[int, list[str]] = {}
+            refined = refine_texts(
+                node_originals,
+                node_translated,
+                cfg,
+                threshold=quality_threshold,
+                creativity=creativity,
+                glossary=glossary,
+                extra_prompt=extra_prompt,
+                issues_log=issues_log,
+            )
+            # Put refined node translations back
+            node_refined: dict[int, str] = dict(
+                enumerate(refined)
+            )
+            for j in range(len(translated_all)):
+                if translated_sources[j][0] == "node":
+                    node_idx = translated_sources[j][1]
+                    translated_all[j] = node_refined[node_idx]
 
     # ── Write back: separate node and attribute translations ────────────────
     # HTML void elements — can't contain text, safe to preserve and re-append

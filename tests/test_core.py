@@ -149,7 +149,7 @@ class TestTranslateHtmlFallback:
 
         mock_engine_config.translate = flaky
 
-        result, _ = translate_html(html, "test")
+        result, _ = translate_html(html, "test", quality_threshold=0)
         assert call_log == [2, 2, 1, 1]  # first 2 fails → retry @2 → two singles
         assert b"VI: A" in result
         assert b"VI: B" in result
