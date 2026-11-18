@@ -14,10 +14,6 @@ Usage in html_translator.py:
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .config import Glossary
 
 # ── Quality checks ──────────────────────────────────────────────────────────
 
@@ -31,7 +27,6 @@ _MAX_LENGTH_RATIO = 3.0
 
 def _check_tag_balance(text: str) -> tuple[bool, str]:
     """Check that all emphasis tags open and close correctly."""
-    tags = _EMPHASIS_TAG_RE.findall(text)
     stack: list[str] = []
     for tag_match in _EMPHASIS_TAG_RE.finditer(text):
         raw = tag_match.group(0)

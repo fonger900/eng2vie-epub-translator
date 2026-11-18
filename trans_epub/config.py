@@ -5,6 +5,7 @@ Glossary loading for character pronouns and terminology.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from dataclasses import dataclass, field
@@ -43,6 +44,15 @@ def _load_toml(path: Path) -> dict[str, Any]:
         return {}
 
 
+def _string_list(value: object) -> list[str]:
+    """Normalise a TOML string-or-array value into a clean list of strings."""
+    if isinstance(value, str):
+        value = [value]
+    elif not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
 # ── Glossary ──────────────────────────────────────────────────────────────────
 
 
@@ -54,9 +64,44 @@ class CharacterEntry:
     address: str | None = None  # hô (how others address them)
     narrator: str | None = None  # narrator reference
     note: str | None = None  # context (age, role, relationship)
+    avoid: list[str] = field(default_factory=list)  # forms that must not be used
+    aliases: list[str] = field(default_factory=list)  # other names in the source
 
     def is_empty(self) -> bool:
-        return not any([self.self_ref, self.address, self.narrator, self.note])
+        return not any(
+            [
+                self.self_ref,
+                self.address,
+                self.narrator,
+                self.note,
+                self.avoid,
+                self.aliases,
+            ]
+        )
+
+
+@dataclass
+class NarrativeEntry:
+    """Book-level point-of-view and narration settings."""
+
+    pov: str | None = None
+    narrator: str | None = None
+    notes: str | None = None
+
+    def is_empty(self) -> bool:
+        return not any([self.pov, self.narrator, self.notes])
+
+
+@dataclass
+class RelationshipEntry:
+    """Pronoun pair for one speaker → listener relationship."""
+
+    self_ref: str | None = None
+    address: str | None = None
+    note: str | None = None
+
+    def is_empty(self) -> bool:
+        return not any([self.self_ref, self.address, self.note])
 
 
 @dataclass
@@ -65,9 +110,16 @@ class Glossary:
 
     characters: dict[str, CharacterEntry] = field(default_factory=dict)
     terms: dict[str, str] = field(default_factory=dict)
+    narrative: NarrativeEntry | None = None
+    relationships: dict[str, RelationshipEntry] = field(default_factory=dict)
 
     def is_empty(self) -> bool:
-        return not self.characters and not self.terms
+        return (
+            not self.characters
+            and not self.terms
+            and self.narrative is None
+            and not self.relationships
+        )
 
 
 def load_glossary(path: Path | None = None) -> Glossary | None:
@@ -83,6 +135,17 @@ def load_glossary(path: Path | None = None) -> Glossary | None:
     if not data:
         return None
 
+    narrative: NarrativeEntry | None = None
+    narrative_data = data.get("narrative")
+    if isinstance(narrative_data, dict):
+        candidate = NarrativeEntry(
+            pov=narrative_data.get("pov"),
+            narrator=narrative_data.get("narrator"),
+            notes=narrative_data.get("notes") or narrative_data.get("note"),
+        )
+        if not candidate.is_empty():
+            narrative = candidate
+
     characters: dict[str, CharacterEntry] = {}
     for name, entry in data.get("characters", {}).items():
         if isinstance(entry, str):
@@ -94,13 +157,37 @@ def load_glossary(path: Path | None = None) -> Glossary | None:
                 address=entry.get("form"),
                 narrator=entry.get("narrator"),
                 note=entry.get("note"),
+                avoid=_string_list(entry.get("avoid", [])),
+                aliases=_string_list(entry.get("aliases", [])),
             )
             if not char.is_empty():
                 characters[name] = char
 
+    relationships: dict[str, RelationshipEntry] = {}
+    for pair, entry in data.get("relationships", {}).items():
+        if not isinstance(entry, dict):
+            continue
+        if "->" not in pair:
+            continue
+        speaker, listener = (part.strip() for part in pair.split("->", 1))
+        if not speaker or not listener:
+            continue
+        relationship = RelationshipEntry(
+            self_ref=entry.get("self"),
+            address=entry.get("address") or entry.get("form"),
+            note=entry.get("note"),
+        )
+        if not relationship.is_empty():
+            relationships[f"{speaker} → {listener}"] = relationship
+
     terms: dict[str, str] = data.get("terms", {})
 
-    glossary = Glossary(characters=characters, terms=terms)
+    glossary = Glossary(
+        characters=characters,
+        terms=terms,
+        narrative=narrative,
+        relationships=relationships,
+    )
     return None if glossary.is_empty() else glossary
 
 
@@ -109,10 +196,30 @@ def build_glossary_prompt(glossary: Glossary) -> str:
     if glossary.is_empty():
         return ""
 
-    parts = ["\nGlossary (follow strictly for consistency):"]
+    parts = [
+        "\nGLOSSARY (HIGHEST PRIORITY — these rules override all other instructions):"
+    ]
+
+    if glossary.narrative:
+        parts.append("Narrative voice:")
+        if glossary.narrative.pov:
+            parts.append(f"• Point of view: {glossary.narrative.pov}")
+        if glossary.narrative.narrator:
+            parts.append(
+                f'• Narrator self-reference in narration: "{glossary.narrative.narrator}"'
+            )
+        if glossary.narrative.notes:
+            parts.append(f"• Notes: {glossary.narrative.notes}")
 
     if glossary.characters:
         parts.append("Characters (pronouns):")
+        parts.append(
+            "Legend: self = how the character refers to themselves in dialogue; "
+            "address = how others address them in dialogue; narrator = how the "
+            "narration refers to them; aliases = other names for the same "
+            "character; avoid = forms that must not be used for this character "
+            "in narration."
+        )
         for name, entry in glossary.characters.items():
             details = []
             if entry.self_ref:
@@ -121,10 +228,31 @@ def build_glossary_prompt(glossary: Glossary) -> str:
                 details.append(f'address="{entry.address}"')
             if entry.narrator:
                 details.append(f'narrator="{entry.narrator}"')
+            if entry.aliases:
+                details.append(
+                    "aliases=" + ", ".join(f'"{item}"' for item in entry.aliases)
+                )
+            if entry.avoid:
+                details.append(
+                    "avoid=" + ", ".join(f'"{item}"' for item in entry.avoid)
+                )
             detail_str = ", ".join(details)
             if entry.note:
                 detail_str += f" — {entry.note}"
             parts.append(f"• {name}: {detail_str}")
+
+    if glossary.relationships:
+        parts.append("Dialogue pairs (speaker → listener):")
+        for pair, entry in glossary.relationships.items():
+            details = []
+            if entry.self_ref:
+                details.append(f'self="{entry.self_ref}"')
+            if entry.address:
+                details.append(f'address="{entry.address}"')
+            detail_str = ", ".join(details)
+            if entry.note:
+                detail_str += f" — {entry.note}"
+            parts.append(f"• {pair}: {detail_str}")
 
     if glossary.terms:
         parts.append("Terms:")
@@ -141,6 +269,19 @@ def validate_glossary(glossary: Glossary) -> list[str]:
     suspiciously short or long values, duplicate mappings.
     """
     warnings: list[str] = []
+
+    if glossary.narrative:
+        pov = (glossary.narrative.pov or "").lower()
+        if "first" in pov and not glossary.narrative.narrator:
+            warnings.append(
+                "Narrative POV is first-person but no narrator pronoun is set"
+            )
+
+    for pair, entry in glossary.relationships.items():
+        if not entry.self_ref and not entry.address:
+            warnings.append(
+                f"Relationship '{pair}' has no self or address pronoun — may be ignored"
+            )
 
     for name, entry in glossary.characters.items():
         if entry.is_empty():
@@ -180,8 +321,12 @@ def scan_glossary_matches(
         count = combined.count(eng.lower())
         matches[eng] = count
 
-    for name in glossary.characters:
-        count = combined.count(name.lower())
+    for name, entry in glossary.characters.items():
+        names = {name, *entry.aliases}
+        pattern = "|".join(
+            re.escape(alias) for alias in sorted(names, key=len, reverse=True)
+        )
+        count = len(re.findall(rf"\b(?:{pattern})\b", combined, re.IGNORECASE))
         matches[f"[character] {name}"] = count
 
     return matches

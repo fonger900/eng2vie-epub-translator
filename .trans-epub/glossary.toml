@@ -1,0 +1,118 @@
+# Roadside Picnic — book-specific pronoun and terminology glossary.
+#
+# Delete or replace this file when translating a different book.
+# Changes here do NOT invalidate an existing .cache.json — rerun with --fresh
+# (or --retranslate 1,2,3) after editing this file.
+
+[narrative]
+pov = "mixed"
+notes = "Chapter 1 is first-person: Redrick Schuhart narrates as 'tôi'. Chapters 2-4 are third-person limited: keep third person and use 'Red' as the default narration reference. Never switch a chapter's POV. Dialogue pronouns follow the relationship pairs below. 'hắn' and 'gã' are acceptable narration pronouns; keep one choice per character/scene instead of alternating with 'anh ấy' without a reason."
+
+[characters."Redrick Schuhart"]
+self = "tôi"
+form = "Red"
+narrator = "Red"
+aliases = ["Red", "Redrick", "Schuhart"]
+note = "nhân vật chính; chương 1 xưng 'tôi'; chương 2-4 tường thuật ngôi ba, dùng 'Red' làm mặc định, 'anh ấy' khi cần tránh lặp tên; 'hắn/gã' được phép dùng, giữ nhất quán trong cảnh."
+
+[characters."Kirill Panov"]
+self = "tôi"
+form = "anh"
+narrator = "anh ấy"
+aliases = ["Kirill", "Panov"]
+note = "đồng nghiệp, lớn tuổi hơn Red; Red gọi 'anh', Kirill gọi Red là 'cậu' hoặc 'Red'; dùng 'anh ấy' mặc định, 'Kirill' khi cần phân biệt; 'hắn/gã' được phép dùng, giữ nhất quán trong cảnh."
+
+[characters.Guta]
+self = "em"
+form = "em"
+narrator = "cô ấy"
+aliases = ["Guta"]
+note = "vợ Red; Guta gọi Red là 'anh', tự xưng 'em'; Red gọi Guta là 'em'; dùng 'Guta' khi cần phân biệt; không dùng 'ả/thị/cô ta'."
+avoid = ["ả", "thị", "cô ta", "nó"]
+
+[characters.Monkey]
+self = "con"
+form = "con"
+narrator = "Monkey"
+aliases = ["Monkey"]
+note = "con gái Red; gọi Red là 'bố', tự xưng 'con'; không dùng 'nó/con bé' trong tường thuật trung tính."
+avoid = ["nó", "con bé"]
+
+[characters."Richard Noonan"]
+self = "tôi"
+form = "ông"
+narrator = "ông ấy"
+aliases = ["Richard", "Dick", "Noonan"]
+note = "giám đốc thiết bị điện tử, lớn tuổi; Red gọi 'ông' hoặc 'anh Noonan'; Noonan gọi Red là 'Red' hoặc 'cậu'; dùng 'ông ấy' mặc định, 'Noonan' khi cần phân biệt; 'hắn/gã/lão' được phép dùng, giữ nhất quán trong cảnh."
+
+[characters."Arthur Burbridge"]
+self = "em"
+form = "cậu"
+narrator = "cậu ấy"
+aliases = ["Arthur", "Burbridge"]
+note = "thanh niên trẻ đi cùng Red; gọi Red là 'anh', tự xưng 'em'; Red gọi 'cậu'; dùng 'cậu ấy' mặc định, 'Burbridge' khi cần phân biệt; 'hắn/gã' được phép dùng, giữ nhất quán trong cảnh."
+
+[characters."Valentine Pilman"]
+self = "tôi"
+form = "giáo sư"
+narrator = "ông ấy"
+aliases = ["Valentine", "Pilman", "Dr. Pilman"]
+note = "nhà vật lý đoạt giải Nobel, lớn tuổi; gọi bằng 'giáo sư' hoặc 'ông'; dùng 'ông ấy' mặc định, 'Pilman' khi cần phân biệt; 'hắn/gã/lão' được phép dùng, giữ nhất quán trong cảnh."
+
+[characters.Buzzard]
+self = "tôi"
+form = "Buzzard"
+narrator = "Buzzard"
+aliases = ["Buzzard"]
+note = "dân stalker; giữ sắc thái khinh miệt có kiểm soát: có thể dùng 'lão Buzzard' nhưng không đổi sang 'anh ấy'."
+avoid = ["anh ấy", "ông ấy"]
+
+[relationships."Kirill->Red"]
+self = "tôi"
+address = "cậu"
+note = "Kirill nói với Red; có thể gọi 'Red' thay vì 'cậu'."
+
+[relationships."Red->Kirill"]
+self = "em"
+address = "anh"
+note = "Red nói với Kirill."
+
+[relationships."Guta->Red"]
+self = "em"
+address = "anh"
+
+[relationships."Red->Guta"]
+self = "anh"
+address = "em"
+
+[relationships."Monkey->Red"]
+self = "con"
+address = "bố"
+
+[relationships."Red->Monkey"]
+self = "bố"
+address = "con"
+
+[relationships."Noonan->Red"]
+self = "tôi"
+address = "cậu"
+
+[relationships."Red->Noonan"]
+self = "tôi"
+address = "ông"
+
+[relationships."Burbridge->Red"]
+self = "em"
+address = "anh"
+
+[relationships."Red->Burbridge"]
+self = "tôi"
+address = "cậu"
+
+[terms]
+"Zone" = "Vùng"
+"stalker" = "stalker"
+"empty" = "vật thể trống"
+"the Visitation" = "Cuộc Viếng Thăm"
+"Golden Ball" = "Quả Cầu Vàng"
+"Harmont" = "Harmont"

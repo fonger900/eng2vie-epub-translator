@@ -13,3 +13,6 @@ wheels/
 *.json
 .env
 *.txt
+
+# Project translation prompt (auto-loaded by trans-epub)
+!.trans-epub/prompt.txt

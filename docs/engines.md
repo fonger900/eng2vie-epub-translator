@@ -45,7 +45,7 @@ The `ENGINES` dict (defined in `base.py`) is the single registry. Adding a new e
 
 ## Engine Types
 
-### LLM-based (Gemini, DeepSeek, Alibaba)
+### LLM-based (Gemini, DeepSeek, Alibaba, OpenRouter)
 
 Send a system prompt (`LLM_PROMPT`) plus the texts as a JSON payload. Expect a JSON response with a `translations` array.
 
@@ -54,7 +54,7 @@ request:  LLM_PROMPT + json.dumps({"texts": [...texts...]})
 response: {"translations": ["...", "...", ...]}
 ```
 
-All three use `call_with_retry` from `base.py` for automatic retry with exponential backoff and proactive rate limiting.
+All LLM engines use `call_with_retry` from `base.py` for automatic retry with exponential backoff and proactive rate limiting.
 
 ### HTTP Translation API (Azure, Google Cloud Translation, DeepL)
 

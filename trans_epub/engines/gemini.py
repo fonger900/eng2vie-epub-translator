@@ -5,6 +5,10 @@ Optionally set GEMINI_MODEL to override the model name.
 Optionally set GEMINI_MAX_TOKENS to override max output tokens.
 Optionally set GEMINI_TIMEOUT to override request timeout in seconds (default: 300).
 
+Thinking is minimized by default to save output tokens and reduce latency.
+Gemini 2.5 Flash/Flash-Lite can disable it completely; newer models expose
+only a "minimal" (near-off) level.
+
 Token usage tracking and cost estimation are built in — see _GEMINI_PRICING
 for per-model rates (update when Google changes pricing).
 """
@@ -31,7 +35,7 @@ from .base import (
 if TYPE_CHECKING:
     from ..config import Glossary
 
-_DEFAULT_MODEL = "gemini-3.1-flash-lite"
+_DEFAULT_MODEL = "gemini-3.5-flash-lite"
 # _DEFAULT_MODEL = "gemini-3.1-pro-preview"
 
 # ── Pricing (USD per 1M tokens) ────────────────────────────────────────────────
@@ -39,6 +43,7 @@ _GEMINI_PRICING: dict[str, tuple[float, float]] = {
     # Flash-Lite
     "gemini-2.5-flash-lite": (0.10, 0.40),
     "gemini-3.1-flash-lite": (0.25, 1.50),
+    "gemini-3.5-flash-lite": (0.30, 2.50),
     # Flash
     "gemini-2.5-flash": (0.15, 0.60),
     "gemini-3.1-flash": (0.15, 0.60),
@@ -66,7 +71,10 @@ def _accumulate_usage(body: dict[str, Any]) -> None:
     global _prompt_tokens, _output_tokens
     with _token_lock:
         _prompt_tokens += usage.get("promptTokenCount", 0)
-        _output_tokens += usage.get("candidatesTokenCount", 0)
+        # Thinking tokens are billed at the output rate, so include them.
+        _output_tokens += usage.get("candidatesTokenCount", 0) + usage.get(
+            "thoughtsTokenCount", 0
+        )
 
 
 def _track_api_call(chars: int) -> None:
@@ -205,6 +213,34 @@ _SAFETY_SETTINGS = [
 ]
 
 
+# ── Thinking config ────────────────────────────────────────────────────────────
+
+
+# Translation does not need deep reasoning, so keep thinking as low as the
+# selected model allows. This cuts output-token cost and latency.
+#
+# Gemini 2.5 Flash/Flash-Lite accept thinkingBudget=0 (fully off).
+# Gemini 2.5 Pro cannot disable thinking (minimum budget is 128).
+# Gemini 3+ uses thinkingLevel instead. "minimal" is the lowest level, but is
+# unsupported on Pro, Gemini 4, and Gemini 3.8 Flash, so those use "low".
+def _thinking_config(model: str) -> dict[str, Any] | None:
+    if model.startswith("gemini-2.5"):
+        if "pro" in model:
+            return {"thinkingBudget": 128}
+        return {"thinkingBudget": 0}
+
+    if model.startswith(("gemini-3", "gemini-4")):
+        supports_minimal = not (
+            "pro" in model
+            or model.startswith("gemini-4")
+            or model.startswith("gemini-3.8")
+        )
+        return {"thinkingLevel": "minimal" if supports_minimal else "low"}
+
+    # Older Gemini models do not support thinkingConfig at all.
+    return None
+
+
 # ── Main translate function ────────────────────────────────────────────────────
 
 
@@ -221,6 +257,8 @@ def gemini_translate(
     model = os.environ.get("GEMINI_MODEL") or _DEFAULT_MODEL
 
     generation_config: dict[str, Any] = {"responseMimeType": "application/json"}
+    if thinking := _thinking_config(model):
+        generation_config["thinkingConfig"] = thinking
     if creativity is not None:
         generation_config["temperature"] = creativity
     if max_tokens := os.environ.get("GEMINI_MAX_TOKENS"):

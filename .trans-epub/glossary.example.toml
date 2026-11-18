@@ -10,13 +10,30 @@
 # or creativity if hitting API rate limits. Use --fresh to ignore cache and
 # re-translate with an updated glossary.
 
+# ── Narrative voice ────────────────────────────────────────────────────────────
+# Lock the book's point of view so the model does not switch between
+# first person ("tôi") and "ta/chúng ta" from batch to batch.
+#
+# [narrative]
+# pov = "first-person"                       # or "third-person", "mixed"
+# narrator = "tôi"                           # narrator's self-reference
+# notes = "Chapter 1 is first-person; chapters 2-4 are third-person limited."
+
+[narrative]
+# Uncomment and edit for your book:
+# pov = "first-person"
+# narrator = "tôi"
+# notes = ""
+
 # ── Characters ─────────────────────────────────────────────────────────────────
 # Map character names to Vietnamese pronoun usage.
 #
 # Fields:
-#   self     = xưng  (how the character refers to themselves)
-#   form     = hô   (how others address them)
+#   self     = xưng  (how the character refers to themselves in dialogue)
+#   form     = hô   (how others address them in dialogue)
 #   narrator = how the narrator refers to them
+#   aliases  = other names/nicknames for the same character
+#   avoid    = forms that must NOT be used for this character in narration
 #   note     = brief context (age, role, relationships)
 #
 # Simple form (just address pronoun):
@@ -27,6 +44,8 @@
 #   self = "tôi"
 #   form = "anh"
 #   narrator = "anh ấy"
+#   aliases = ["Johnny", "Mr. John"]
+#   avoid = ["lão"]          # optional: only forms you never want
 #   note = "ông chủ, ~40 tuổi"
 
 [characters]
@@ -54,6 +73,24 @@
 # [characters."Charles Petzold"]
 # narrator = "ông"
 # note = "tác giả"
+
+
+# ── Dialogue relationships ─────────────────────────────────────────────────────
+# Vietnamese pronouns depend on who is speaking to whom. These pairs override
+# the character-level `self` and `form` values for a specific relationship.
+#
+# Format: "Speaker->Listener"
+#
+# [relationships."John->Mary"]
+# self = "anh"       # John calls himself "anh" when speaking to Mary
+# address = "em"     # John calls Mary "em"
+# note = "vợ chồng"
+#
+# [relationships."Mary->John"]
+# self = "em"
+# address = "anh"
+
+[relationships]
 
 
 # ── Terms ──────────────────────────────────────────────────────────────────────

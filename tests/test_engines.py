@@ -4,9 +4,11 @@ from unittest.mock import patch
 
 import pytest
 
+from trans_epub.config import Glossary
 from trans_epub.engines.base import ENGINES
 from trans_epub.engines.base import (
     EngineConfig,
+    build_prompt,
     extract_translations,
     translate_texts,
 )
@@ -14,7 +16,15 @@ from trans_epub.engines.base import (
 
 class TestEnginesRegistered:
     def test_all_expected_engines_present(self):
-        expected = {"azure", "alibaba", "gemini", "deepseek", "google", "deepl"}
+        expected = {
+            "azure",
+            "alibaba",
+            "gemini",
+            "deepseek",
+            "openrouter",
+            "google",
+            "deepl",
+        }
         assert expected.issubset(ENGINES.keys())
 
     def test_each_config_has_required_fields(self):
@@ -26,10 +36,26 @@ class TestEnginesRegistered:
             assert isinstance(config.delay, (int, float))
 
 
+class TestBuildPrompt:
+    def test_glossary_has_final_authority_over_extra_prompt(self):
+        prompt = build_prompt(
+            Glossary(terms={"Zone": "Vùng"}),
+            "Use 'ta' for the narrator.",
+        )
+        assert prompt.index("Use 'ta' for the narrator.") < prompt.index(
+            "GLOSSARY (HIGHEST PRIORITY"
+        )
+
+    def test_core_prompt_preserves_source_pov(self):
+        prompt = build_prompt()
+        assert "Preserve the source point of view exactly" in prompt
+
+
 class TestTranslateTexts:
     """translate_texts dispatcher passes creativity to LLM engines only."""
 
-    def test_passes_creativity_to_llm_engine(self):
+    @pytest.mark.parametrize("engine", ["gemini", "deepseek", "alibaba", "openrouter"])
+    def test_passes_creativity_to_llm_engine(self, engine):
         seen = {}
 
         def fake(texts, **kwargs):
@@ -37,10 +63,10 @@ class TestTranslateTexts:
             return texts
 
         cfg = EngineConfig(
-            name="gemini", translate=fake, char_limit=100, elem_limit=10, delay=0
+            name=engine, translate=fake, char_limit=100, elem_limit=10, delay=0
         )
-        with patch.dict(ENGINES, {"gemini": cfg}):
-            translate_texts("gemini", ["hello"], creativity=0.5)
+        with patch.dict(ENGINES, {engine: cfg}):
+            translate_texts(engine, ["hello"], creativity=0.5)
 
         assert seen.get("creativity") == 0.5
 

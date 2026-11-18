@@ -66,6 +66,8 @@ class TestLoadGlossary:
 self = "tôi"
 form = "anh"
 narrator = "anh ấy"
+avoid = ["hắn", "gã"]
+aliases = ["Johnny", "Mr. John"]
 note = "ông chủ, ~40 tuổi"
 """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
@@ -77,7 +79,45 @@ note = "ông chủ, ~40 tuổi"
             assert entry.self_ref == "tôi"
             assert entry.address == "anh"
             assert entry.narrator == "anh ấy"
+            assert entry.avoid == ["hắn", "gã"]
+            assert entry.aliases == ["Johnny", "Mr. John"]
             assert entry.note == "ông chủ, ~40 tuổi"
+            Path(f.name).unlink()
+
+    def test_narrative_section(self):
+        toml = """\
+[narrative]
+pov = "first-person"
+narrator = "tôi"
+notes = "Redrick narrates chapter 1."
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+            f.write(toml)
+            f.flush()
+            glossary = load_glossary(Path(f.name))
+            assert glossary is not None
+            assert glossary.narrative is not None
+            assert glossary.narrative.pov == "first-person"
+            assert glossary.narrative.narrator == "tôi"
+            assert glossary.narrative.notes == "Redrick narrates chapter 1."
+            Path(f.name).unlink()
+
+    def test_relationships(self):
+        toml = """\
+[relationships."John->Mary"]
+self = "anh"
+address = "em"
+note = "vợ chồng"
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+            f.write(toml)
+            f.flush()
+            glossary = load_glossary(Path(f.name))
+            assert glossary is not None
+            relationship = glossary.relationships["John → Mary"]
+            assert relationship.self_ref == "anh"
+            assert relationship.address == "em"
+            assert relationship.note == "vợ chồng"
             Path(f.name).unlink()
 
     def test_terms(self):
@@ -132,8 +172,50 @@ class TestBuildGlossaryPrompt:
         assert "machine learning" in prompt
         assert "học máy" in prompt
 
+    def test_narrative_and_relationships_in_prompt(self):
+        from trans_epub.config import NarrativeEntry, RelationshipEntry
+
+        glossary = Glossary(
+            narrative=NarrativeEntry(
+                pov="first-person",
+                narrator="tôi",
+                notes="Keep the POV fixed.",
+            ),
+            relationships={
+                "John → Mary": RelationshipEntry(
+                    self_ref="anh", address="em", note="vợ chồng"
+                )
+            },
+        )
+        prompt = build_glossary_prompt(glossary)
+        assert "HIGHEST PRIORITY" in prompt
+        assert "first-person" in prompt
+        assert 'Narrator self-reference in narration: "tôi"' in prompt
+        assert "John → Mary" in prompt
+        assert 'self="anh"' in prompt
+        assert 'address="em"' in prompt
+
+    def test_avoid_and_aliases_in_prompt(self):
+        glossary = Glossary(
+            characters={
+                "John": CharacterEntry(
+                    avoid=["hắn", "gã"], aliases=["Johnny", "Mr. John"]
+                )
+            }
+        )
+        prompt = build_glossary_prompt(glossary)
+        assert 'aliases="Johnny", "Mr. John"' in prompt
+        assert 'avoid="hắn", "gã"' in prompt
+
     def test_empty_glossary_returns_empty_string(self):
         assert build_glossary_prompt(Glossary()) == ""
+
+    def test_narrative_only_glossary_is_not_empty(self):
+        from trans_epub.config import NarrativeEntry
+
+        glossary = Glossary(narrative=NarrativeEntry(pov="first-person"))
+        assert not glossary.is_empty()
+        assert build_glossary_prompt(glossary) != ""
 
 
 class TestValidateGlossary:
@@ -183,6 +265,22 @@ class TestValidateGlossary:
         warnings = validate_glossary(glossary)
         assert any("Bob" in w for w in warnings)
 
+    def test_warns_on_first_person_without_narrator(self):
+        from trans_epub.config import NarrativeEntry, validate_glossary
+
+        glossary = Glossary(narrative=NarrativeEntry(pov="first-person"))
+        warnings = validate_glossary(glossary)
+        assert any("narrator pronoun" in w for w in warnings)
+
+    def test_no_warning_for_first_person_with_narrator(self):
+        from trans_epub.config import NarrativeEntry, validate_glossary
+
+        glossary = Glossary(
+            narrative=NarrativeEntry(pov="first-person", narrator="tôi")
+        )
+        warnings = validate_glossary(glossary)
+        assert not any("narrator pronoun" in w for w in warnings)
+
 
 class TestScanGlossaryMatches:
     def test_finds_term_in_text(self):
@@ -214,6 +312,25 @@ class TestScanGlossaryMatches:
             glossary, ["Alice went to the store", "Bob met Alice"]
         )
         assert matches["[character] Alice"] == 2
+
+    def test_finds_character_aliases(self):
+        from trans_epub.config import scan_glossary_matches
+
+        glossary = Glossary(
+            characters={"Redrick Schuhart": CharacterEntry(aliases=["Red", "Schuhart"])}
+        )
+        matches = scan_glossary_matches(
+            glossary,
+            ["Redrick Schuhart arrived.", "Red lit a cigarette.", "Schuhart left."],
+        )
+        assert matches["[character] Redrick Schuhart"] == 3
+
+    def test_alias_does_not_match_inside_another_word(self):
+        from trans_epub.config import scan_glossary_matches
+
+        glossary = Glossary(characters={"Red": CharacterEntry(aliases=["Red"])})
+        matches = scan_glossary_matches(glossary, ["Redrick was bored."])
+        assert matches["[character] Red"] == 0
 
     def test_empty_text_no_matches(self):
         from trans_epub.config import scan_glossary_matches

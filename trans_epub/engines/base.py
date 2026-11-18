@@ -158,6 +158,9 @@ LLM_PROMPT = (
     "the original English text alongside the translation.\n"
     "- Maintain the tone, style, and flow of the original text across the paragraphs "
     "(they are in consecutive order).\n"
+    "- Preserve the source point of view exactly: translate first-person narration as "
+    'first person ("tôi", "chúng tôi") and third-person narration as third person. '
+    'Do not switch to "ta", "chúng ta", or another person for stylistic variety.\n'
     f"- Some texts contain HTML emphasis tags ({_EMPHASIS_LIST}). "
     "Keep those tags in your translation, placed around the equivalent emphasized "
     "words or phrases. Do not add, remove, or change any other HTML tags, and do "
@@ -390,16 +393,20 @@ def call_with_retry(
 
 
 def build_prompt(glossary: Glossary | None = None, extra_prompt: str = "") -> str:
-    """Build full system prompt, optionally including glossary and extra instructions."""
+    """Build full system prompt, optionally including glossary and extra instructions.
+
+    The glossary is appended last so its pronoun and terminology rules have the
+    final say over the book-level prompt.
+    """
     from ..config import build_glossary_prompt
 
     prompt = LLM_PROMPT
-    if glossary:
-        prompt += build_glossary_prompt(glossary)
     if extra_prompt:
         prompt += (
             "\nAdditional instructions for this book:\n" + extra_prompt.strip() + "\n"
         )
+    if glossary:
+        prompt += build_glossary_prompt(glossary)
     return prompt
 
 
@@ -412,7 +419,7 @@ def translate_texts(
 ) -> list[str]:
     """Dispatch translation to the appropriate engine function."""
     cfg = ENGINES[engine]
-    if engine in ("gemini", "deepseek", "alibaba"):
+    if engine in ("gemini", "deepseek", "alibaba", "openrouter"):
         return cfg.translate(
             texts, creativity=creativity, glossary=glossary, extra_prompt=extra_prompt
         )

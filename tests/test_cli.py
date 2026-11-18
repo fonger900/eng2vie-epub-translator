@@ -44,6 +44,19 @@ class TestResolveEngine:
         monkeypatch.setenv("GEMINI_API_KEY", "k")
         assert resolve_engine("auto") == "azure"
 
+    def test_auto_detects_openrouter(self, monkeypatch):
+        for var in (
+            "AZURE_TRANSLATOR_KEY",
+            "GEMINI_API_KEY",
+            "DEEPSEEK_API_KEY",
+            "DASHSCOPE_API_KEY",
+            "GOOGLE_TRANSLATE_API_KEY",
+            "DEEPL_API_KEY",
+        ):
+            monkeypatch.delenv(var, raising=False)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        assert resolve_engine("auto") == "openrouter"
+
     def test_auto_raises_when_no_key(self, monkeypatch):
         for var in (
             "AZURE_TRANSLATOR_KEY",
@@ -52,6 +65,7 @@ class TestResolveEngine:
             "DASHSCOPE_API_KEY",
             "GOOGLE_TRANSLATE_API_KEY",
             "DEEPL_API_KEY",
+            "OPENROUTER_API_KEY",
         ):
             monkeypatch.delenv(var, raising=False)
         with pytest.raises(RuntimeError, match="No translation API key found"):

@@ -22,7 +22,8 @@ trans_epub/
     ├── deepl.py         # DeepL engine
     ├── deepseek.py      # DeepSeek engine
     ├── gemini.py        # Google Gemini engine
-    └── google.py        # Google Cloud Translation v2 engine
+    ├── google.py        # Google Cloud Translation v2 engine
+    └── openrouter.py    # OpenRouter engine (OpenAI-compatible)
 ```
 
 ## Translation Pipeline
@@ -74,7 +75,7 @@ epub_translator.translate_epub()
 
 Glossary loading only — no runtime config.
 
-Dataclasses: `CharacterEntry` (pronoun mapping), `Glossary` (characters + terms).
+Dataclasses: `CharacterEntry` (pronoun mapping, aliases, avoid list), `NarrativeEntry` (POV + narrator), `RelationshipEntry` (speaker→listener pair), `Glossary` (characters + relationships + terms).
 
 Helpers: `_find_file()` (search .trans-epub/ + ~/.config/...), `_load_toml()` (tomllib with fallback).
 
@@ -165,7 +166,7 @@ Core HTML processing logic:
 
 **`RateLimiter`**: Thread-safe token-bucket limiter — prevents hitting API RPM limits proactively. Default 10 RPM for LLM engines (Gemini: 15 RPM).
 
-**`LLM_PROMPT`**: Shared system prompt for LLM-based engines (Gemini, DeepSeek, Alibaba). Instructs the model to translate EN→VI naturally, preserve emphasis tags, and return JSON. Supports glossary injection via `build_prompt(glossary)`.
+**`LLM_PROMPT`**: Shared system prompt for LLM-based engines (Gemini, DeepSeek, Alibaba, OpenRouter). Instructs the model to translate EN→VI naturally, preserve the source POV, preserve emphasis tags, and return JSON. Supports glossary injection via `build_prompt(glossary)`; the glossary is appended after the book-level prompt so its pronoun rules have final authority.
 
 **`extract_translations(raw_json)`**: Parses LLM JSON output with repair layers:
 1. Strip markdown code fences
@@ -183,7 +184,7 @@ Core HTML processing logic:
 - Detects quota exceeded keywords in response body (quota, billing, payment required)
 - Re-raises on final attempt exhaustion
 
-### Engine Modules (6 files, 48–97 lines each)
+### Engine Modules (7 files, 48–132 lines each)
 
 Each follows the same pattern:
 1. Define a `{name}_translate(texts, creativity=None, glossary=None)` function
@@ -192,5 +193,5 @@ Each follows the same pattern:
 4. Wrap in `call_with_retry` with proactive rate limiting
 5. Register with `ENGINES[name] = EngineConfig(...)`
 
-All six engines (gemini, deepseek, alibaba, google, deepl, azure) use the shared `call_with_retry` from `base.py` for retry + proactive rate limiting. LLM engines pass `ENGINES[name].limiter` to enforce per-engine RPM limits.
+All seven engines (gemini, deepseek, alibaba, openrouter, google, deepl, azure) use the shared `call_with_retry` from `base.py` for retry + proactive rate limiting. LLM engines pass `ENGINES[name].limiter` to enforce per-engine RPM limits.
 

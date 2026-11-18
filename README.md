@@ -7,11 +7,11 @@
 
 Translate EPUB books from English to Vietnamese using AI translation engines.
 
-**Supported Engines:** Azure Translator, Google Gemini, DeepSeek, Alibaba Qwen, Google Cloud Translation, DeepL
+**Supported Engines:** Azure Translator, Google Gemini, DeepSeek, Alibaba Qwen, OpenRouter, Google Cloud Translation, DeepL
 
 ## Features
 
-- Multi-engine AI translation (6 engines)
+- Multi-engine AI translation (7 engines)
 - Parallel processing with progress bars and char/token tracking
 - Smart caching — resume interrupted runs, EPUB hash integrity check, atomic writes
 - HTML attribute translation — `alt`, `title`, `placeholder`, `aria-label`
@@ -97,6 +97,7 @@ cp .env.example .env
 | Google Gemini | `GEMINI_API_KEY` |
 | DeepSeek | `DEEPSEEK_API_KEY` |
 | Alibaba DashScope | `DASHSCOPE_API_KEY` |
+| OpenRouter | `OPENROUTER_API_KEY` |
 | Google Cloud Translation | `GOOGLE_TRANSLATE_API_KEY` |
 | DeepL | `DEEPL_API_KEY` |
 
@@ -125,15 +126,22 @@ uv run trans-epub book.epub -g my-glossary.toml
 Glossary format (`.toml`):
 
 ```toml
+[narrative]
+pov = "first-person"    # first-person, third-person, or mixed
+narrator = "tôi"        # narrator's self-reference
+notes = "Keep the source POV fixed in every batch."
+
 [characters.John]
-self = "tôi"       # how character refers to themselves
-form = "anh"       # how narrator addresses them
-narrator = "anh ấy" # how narrator refers to them
+self = "tôi"            # how John refers to himself in dialogue
+form = "anh"            # how others address John
+narrator = "anh ấy"     # how narration refers to John
+aliases = ["Johnny"]    # other names/nicknames for John
+avoid = ["lão"]         # optional hard bans for this character
 note = "ông chủ, ~40 tuổi"
 
-[characters.Mary]
-self = "em"
-form = "cô ấy"
+[relationships."John->Mary"]
+self = "anh"            # John refers to himself this way when speaking to Mary
+address = "em"          # John calls Mary this way
 
 [terms]
 "machine learning" = "học máy"
@@ -142,6 +150,35 @@ form = "cô ấy"
 
 See [.trans-epub/glossary.example.toml](.trans-epub/glossary.example.toml) for all options.
 
+### Fixing mixed Vietnamese pronouns
+
+Pronoun mixing usually comes from three things: no glossary, a prompt that
+changes the book's point of view, and reusing the cache after editing the
+prompt/glossary.
+
+1. **Lock the book's POV.** In `[narrative]`, set `pov` and `narrator`. A
+   first-person book must stay `tôi/chúng tôi` in narration; do not let the
+   model switch to `ta/chúng ta` for style.
+2. **Lock each character separately for narration and dialogue.** Use
+   `narrator` for how the narration refers to a character, and `self`/`form`
+   for dialogue. Add `avoid` for variants the model keeps mixing in (`hắn`,
+   `gã`, `cậu ta`, `anh ta`, …).
+3. **Use relationship pairs for dialogue.** Vietnamese pronouns depend on who
+   is speaking to whom, so `[relationships."Kirill->Red"]` is more reliable
+   than one global pronoun per character.
+4. **Re-translate after editing.** Prompt and glossary changes do not
+   invalidate the cache. Use `--fresh`, or `--retranslate 1,2,3` for selected
+   chapters.
+
+Test one chapter before paying for a full run:
+
+```bash
+uv run trans-epub book.epub test-ch1.epub -i 1 --fresh --creativity 0.2
+```
+
+Lower creativity (`0.2-0.3`) reduces pronoun variation. The glossary is
+injected last and overrides conflicting book-level prompt rules.
+
 ## Cost Optimization
 
 | Engine | Approx. Cost | Notes |
@@ -149,6 +186,7 @@ See [.trans-epub/glossary.example.toml](.trans-epub/glossary.example.toml) for a
 | Azure Translator | ~$25/million chars | Cheap for bulk, free tier: 2M chars/month |
 | Alibaba Qwen | ~$0.80/million chars | Best value, qwen-mt-plus optimized for translation |
 | DeepSeek | ~$2/million chars | Often has free tier promotions |
+| OpenRouter | Model-dependent | One API for many models, including free ones. Set `OPENROUTER_MODEL`. |
 | Google Gemini | ~$1.50/million chars | Free tier: 15 RPM, 250K tokens/min. Check limits. |
 | Google Cloud Translation | ~$20/million chars | Premium MT, no LLM overhead |
 | DeepL | ~$25/million chars | Free tier: 500K chars/month |

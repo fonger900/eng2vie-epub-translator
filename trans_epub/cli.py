@@ -23,6 +23,7 @@ _ENV_KEYS = [
     ("DASHSCOPE_API_KEY", "alibaba"),
     ("GOOGLE_TRANSLATE_API_KEY", "google"),
     ("DEEPL_API_KEY", "deepl"),
+    ("OPENROUTER_API_KEY", "openrouter"),
 ]
 
 
@@ -51,7 +52,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--engine",
         "-e",
-        choices=["auto", "azure", "gemini", "deepseek", "alibaba", "google", "deepl"],
+        choices=[
+            "auto",
+            "azure",
+            "gemini",
+            "deepseek",
+            "alibaba",
+            "openrouter",
+            "google",
+            "deepl",
+        ],
         default="auto",
     )
     parser.add_argument(
@@ -80,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         "--creativity",
         type=float,
         default=None,
-        help="Model creativity/temperature for Gemini, DeepSeek, and Alibaba",
+        help="Model creativity/temperature for Gemini, DeepSeek, Alibaba, and OpenRouter",
     )
     parser.add_argument(
         "--glossary",

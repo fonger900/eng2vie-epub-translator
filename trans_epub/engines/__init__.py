@@ -8,3 +8,4 @@ from .deepl import deepl_translate  # noqa: F401
 from .deepseek import deepseek_translate  # noqa: F401
 from .gemini import gemini_translate  # noqa: F401
 from .google import google_translate  # noqa: F401
+from .openrouter import openrouter_translate  # noqa: F401

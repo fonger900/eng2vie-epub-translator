@@ -267,9 +267,11 @@ def translate_html(
 
     # ── Quality refinement pass ────────────────────────────────────────────
     if quality_threshold > 0:
-        from .refiner import check_quality, refine_texts
+        from .refiner import refine_texts
 
-        node_originals = [texts[j] for j, src in enumerate(all_sources) if src[0] == "node"]
+        node_originals = [
+            texts[j] for j, src in enumerate(all_sources) if src[0] == "node"
+        ]
         node_translated = [
             translated_all[j]
             for j, src in enumerate(translated_sources)
@@ -288,9 +290,7 @@ def translate_html(
                 issues_log=issues_log,
             )
             # Put refined node translations back
-            node_refined: dict[int, str] = dict(
-                enumerate(refined)
-            )
+            node_refined: dict[int, str] = dict(enumerate(refined))
             for j in range(len(translated_all)):
                 if translated_sources[j][0] == "node":
                     node_idx = translated_sources[j][1]
