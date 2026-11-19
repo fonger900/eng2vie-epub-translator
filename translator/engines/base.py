@@ -15,8 +15,9 @@ import json
 import re
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -192,9 +193,8 @@ def _repair_truncated_json(text: str) -> str:
             continue
         if ch in "{[":
             stack.append("}" if ch == "{" else "]")
-        elif ch in "}]":
-            if stack and stack[-1] == ch:
-                stack.pop()
+        elif ch in "}]" and stack and stack[-1] == ch:
+            stack.pop()
     # Close any unclosed strings then close brackets/braces in reverse order.
     if in_string:
         text += '"'
@@ -230,7 +230,7 @@ def extract_translations(raw_json: str) -> list[str]:
                 from json_repair import repair_json
 
                 data = json.loads(repair_json(repaired))
-            except Exception:
+            except Exception:  # noqa: BLE001 - fall through to the next repair strategy
                 # Last resort: try to close truncated JSON, then ast.literal_eval
                 try:
                     repaired2 = _repair_truncated_json(repaired)

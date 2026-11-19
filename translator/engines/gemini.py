@@ -231,9 +231,7 @@ def _thinking_config(model: str) -> dict[str, Any] | None:
 
     if model.startswith(("gemini-3", "gemini-4")):
         supports_minimal = not (
-            "pro" in model
-            or model.startswith("gemini-4")
-            or model.startswith("gemini-3.8")
+            "pro" in model or model.startswith(("gemini-4", "gemini-3.8"))
         )
         return {"thinkingLevel": "minimal" if supports_minimal else "low"}
 

@@ -27,12 +27,12 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from .config import Glossary, load_glossary, validate_glossary, scan_glossary_matches
+from .config import Glossary, load_glossary, scan_glossary_matches, validate_glossary
 from .engines.base import (
-    set_verbose,
-    set_current_chapter,
-    reset_cancel_event,
     request_cancel,
+    reset_cancel_event,
+    set_current_chapter,
+    set_verbose,
 )
 from .html_translator import translate_html
 from .toc import rebuild_toc_links, translate_toc_and_nav
@@ -487,7 +487,7 @@ def translate_epub(
         console.print("[bold]No.   Chars  File[/bold]")
         console.print("-" * 60)
         work_items = [(i, item) for i, item in enumerate(items, 1)]
-        jobs = _scan_chapters(work_items, dict(), False)
+        jobs = _scan_chapters(work_items, {}, False)
         total_chars = 0
         for job in jobs:
             console.print(
@@ -700,7 +700,7 @@ def translate_epub(
                         raise
                     except TimeoutError:
                         failed.append((name, f"timed out after {chapter_timeout}s"))
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001 - record any chapter failure
                         failed.append((name, str(e)))
             else:
                 single_executor = ThreadPoolExecutor(max_workers=1)
@@ -715,7 +715,7 @@ def translate_epub(
                         failed.append(
                             (job["name"], f"timed out after {chapter_timeout}s")
                         )
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001 - record any chapter failure
                         failed.append((job["name"], str(e)))
                 for i, item in enumerate(items, 1):
                     if only_chapters and i not in only_chapters:

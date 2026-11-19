@@ -2,7 +2,7 @@
 
 import pytest
 
-from trans_epub.engines import gemini
+from translator.engines import gemini
 
 
 class TestResolvePricing:

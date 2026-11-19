@@ -6,10 +6,9 @@ Glossary loading for character pronouns and terminology.
 from __future__ import annotations
 
 import re
-from typing import Any
-
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 # ── Search paths ──────────────────────────────────────────────────────────────
 
@@ -40,7 +39,7 @@ def _load_toml(path: Path) -> dict[str, Any]:
             return {}
     try:
         return tomllib.loads(path.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, ValueError):
         return {}
 
 

@@ -2,14 +2,13 @@
 
 import argparse
 import os
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from .config import _find_file
 from .epub_translator import translate_epub
-
-from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("eng2vie-epub-translator")

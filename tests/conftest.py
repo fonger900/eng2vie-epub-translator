@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from trans_epub.engines.base import ENGINES, EngineConfig
+from translator.engines.base import ENGINES, EngineConfig
 
 
 @pytest.fixture

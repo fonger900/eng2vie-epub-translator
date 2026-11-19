@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from trans_epub.engines.base import call_with_retry
+from translator.engines.base import call_with_retry
 
 
 def _make_success_resp(text="Xin chào"):
@@ -58,11 +58,11 @@ def test_call_with_retry_on_network_error():
 
 def test_call_with_retry_on_429():
     """Test that call_with_retry handles 429 rate limiting."""
-    from trans_epub.engines.base import _cancel_event
+    from translator.engines.base import _cancel_event
 
     # Reset cancel event in case previous test left it set
     old_cancel = _cancel_event
-    import trans_epub.engines.base as base_mod
+    import translator.engines.base as base_mod
 
     base_mod._cancel_event = None
     try:

@@ -6,7 +6,6 @@ Set DEEPL_API_BASE to override the endpoint.
 """
 
 import os
-
 from typing import Any
 
 import requests

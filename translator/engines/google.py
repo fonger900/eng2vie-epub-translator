@@ -5,7 +5,6 @@ Optionally set GOOGLE_TRANSLATE_REGION to override the region (default: global).
 """
 
 import os
-
 from typing import Any
 
 import requests

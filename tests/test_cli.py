@@ -2,7 +2,7 @@
 
 import pytest
 
-from trans_epub.cli import __version__, main, resolve_engine
+from translator.cli import __version__, main, resolve_engine
 
 
 class TestVersion:

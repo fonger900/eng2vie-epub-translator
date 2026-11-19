@@ -5,7 +5,7 @@ from __future__ import annotations
 import html as html_lib
 import re
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
@@ -30,7 +30,9 @@ ProgressCallback = Callable[[int, int, int], None]
 
 # Matches any tag that isn't an emphasis tag — used to strip everything else
 # from the LLM's output.
-_STRIP_TAGS_RE = re.compile(rf"<(?!/?(?:{'|'.join(EMPHASIS_TAGS)})\b)[^>]+>", re.I)
+_STRIP_TAGS_RE = re.compile(
+    rf"<(?!/?(?:{'|'.join(EMPHASIS_TAGS)})\b)[^>]+>", re.IGNORECASE
+)
 
 
 def _should_preserve(
@@ -239,7 +241,7 @@ def translate_html(
             # and system prompt.
             if not _retried and len(batch_texts) > 1:
                 return translate_batch(batch_texts, _retried=True)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - exhausted retries, split below
             # Already exhausted call_with_retry's internal retries — split.
             pass
 
@@ -300,8 +302,8 @@ def translate_html(
     # HTML void elements — can't contain text, safe to preserve and re-append
     _VOID_ELEMENTS = {"img", "br", "hr", "input", "source", "track", "embed"}
 
-    node_translations: dict[int, str] = dict()
-    attr_translations: dict[int, str] = dict()
+    node_translations: dict[int, str] = {}
+    attr_translations: dict[int, str] = {}
     for trans, src in zip(translated_all, translated_sources):
         kind, idx = src
         if kind == "node":

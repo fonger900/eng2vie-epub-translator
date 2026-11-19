@@ -1,6 +1,6 @@
 """Tests for HTML translation — structure preservation and real EPUB fixture."""
 
-from trans_epub.html_translator import (
+from translator.html_translator import (
     BLOCK_TAGS,
     PRESERVE_CLASSES,
     PRESERVE_TAGS,

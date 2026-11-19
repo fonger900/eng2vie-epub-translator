@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 from ebooklib import epub
 
-from trans_epub.engines.base import ENGINES
-from trans_epub.toc import translate_toc_and_nav
+from translator.engines.base import ENGINES
+from translator.toc import translate_toc_and_nav
 
 
 class TestTranslateToc:
@@ -144,7 +144,7 @@ class TestRebuildTocLinks:
     """rebuild_toc_links rebuilds the in-book TOC page with anchor tags."""
 
     def test_basic_rebuild(self):
-        from trans_epub.toc import rebuild_toc_links
+        from translator.toc import rebuild_toc_links
 
         book = MagicMock()
         book.toc = [
@@ -173,7 +173,7 @@ class TestRebuildTocLinks:
         assert b"href" in content
 
     def test_no_toc_page_skips(self):
-        from trans_epub.toc import rebuild_toc_links
+        from translator.toc import rebuild_toc_links
 
         book = MagicMock()
         book.toc = []
@@ -185,7 +185,7 @@ class TestRebuildTocLinks:
         item.set_content.assert_not_called()
 
     def test_no_doc_toc_div_skips(self):
-        from trans_epub.toc import rebuild_toc_links
+        from translator.toc import rebuild_toc_links
 
         book = MagicMock()
         book.toc = []
@@ -201,7 +201,7 @@ class TestRebuildTocLinks:
 
     def test_skips_epub_nav_items(self):
         from ebooklib import epub
-        from trans_epub.toc import rebuild_toc_links
+        from translator.toc import rebuild_toc_links
 
         book = MagicMock()
         book.toc = []

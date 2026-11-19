@@ -1,6 +1,6 @@
 # eng2vie-epub-translator
 
-[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/github/license/fonger900/eng2vie-epub-translator)](LICENSE)
 
 ![terminal image](./transepub.png)
@@ -22,10 +22,38 @@ Translate EPUB books from English to Vietnamese using AI translation engines.
 
 ## Prerequisites
 
-- Python 3.13+
-- [UV package manager](https://github.com/astral-sh/uv)
+- Python 3.11+
+- [UV package manager](https://github.com/astral-sh/uv) (recommended)
 
 ## Installation
+
+Install the CLI as an isolated tool — no repo clone needed:
+
+```bash
+uv tool install eng2vie-epub-translator
+```
+
+This gives you a global `eng2vie-epub-translator` command that can be run from
+any directory. To try it once without installing anything:
+
+```bash
+uvx eng2vie-epub-translator book.epub
+```
+
+(`pipx install eng2vie-epub-translator` works too if you don't use uv.)
+
+Then add your API keys, either as shell environment variables or in a `.env`
+file in the directory you run the tool from:
+
+```dotenv
+GEMINI_API_KEY=your-key-here
+```
+
+See the [Authentication](#authentication) table below for every supported
+variable.
+
+<details>
+<summary>Developing from source</summary>
 
 ```bash
 git clone https://github.com/fonger900/eng2vie-epub-translator.git
@@ -35,50 +63,53 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
+Run commands inside the repo as `uv run eng2vie-epub-translator ...`.
+</details>
+
 ## Usage
 
 ```bash
 # Basic translation (auto-detects engine from available API keys)
-uv run eng2vie-epub-translator book.epub
+eng2vie-epub-translator book.epub
 
 # With specific engine
-uv run eng2vie-epub-translator book.epub -e alibaba
+eng2vie-epub-translator book.epub -e alibaba
 
 # Translate specific chapters
-uv run eng2vie-epub-translator book.epub -i 1-5
+eng2vie-epub-translator book.epub -i 1-5
 
 # List chapters with char counts
-uv run eng2vie-epub-translator book.epub --list
+eng2vie-epub-translator book.epub --list
 
 # Custom output path
-uv run eng2vie-epub-translator book.epub -o translated.epub
+eng2vie-epub-translator book.epub -o translated.epub
 
 # Parallel threads
-uv run eng2vie-epub-translator book.epub -t 8
+eng2vie-epub-translator book.epub -t 8
 
 # Creativity/temperature for LLM engines
-uv run eng2vie-epub-translator book.epub --creativity 0.5
+eng2vie-epub-translator book.epub --creativity 0.5
 
 # Glossary for consistent character pronouns and terminology
-uv run eng2vie-epub-translator book.epub -g glossary.toml
+eng2vie-epub-translator book.epub -g glossary.toml
 
 # Fresh translation (ignore cache)
-uv run eng2vie-epub-translator book.epub --fresh
+eng2vie-epub-translator book.epub --fresh
 
 # Dry-run: validate glossary, count chars, estimate cost, scan glossary matches
-uv run eng2vie-epub-translator book.epub --dry-run
+eng2vie-epub-translator book.epub --dry-run
 
 # Override API rate limit (paid tier)
-uv run eng2vie-epub-translator book.epub --rpm 60
+eng2vie-epub-translator book.epub --rpm 60
 
 # Set per-chapter timeout (default: 600s)
-uv run eng2vie-epub-translator book.epub --chapter-timeout 300
+eng2vie-epub-translator book.epub --chapter-timeout 300
 
 # Verbose per-request logging
-uv run eng2vie-epub-translator book.epub --verbose
+eng2vie-epub-translator book.epub --verbose
 
 # Extra prompt instructions from file
-uv run eng2vie-epub-translator book.epub -p instructions.txt
+eng2vie-epub-translator book.epub -p instructions.txt
 ```
 
 ## Configuration
@@ -117,10 +148,10 @@ Ensure consistent character voices with a glossary:
 
 ```bash
 # Auto-detected from .eng2vie-epub-translator/glossary.toml or ~/.config/eng2vie-epub-translator/glossary.toml
-uv run eng2vie-epub-translator book.epub
+eng2vie-epub-translator book.epub
 
 # Explicit path
-uv run eng2vie-epub-translator book.epub -g my-glossary.toml
+eng2vie-epub-translator book.epub -g my-glossary.toml
 ```
 
 Glossary format (`.toml`):
@@ -173,7 +204,7 @@ prompt/glossary.
 Test one chapter before paying for a full run:
 
 ```bash
-uv run eng2vie-epub-translator book.epub test-ch1.epub -i 1 --fresh --creativity 0.2
+eng2vie-epub-translator book.epub test-ch1.epub -i 1 --fresh --creativity 0.2
 ```
 
 Lower creativity (`0.2-0.3`) reduces pronoun variation. The glossary is

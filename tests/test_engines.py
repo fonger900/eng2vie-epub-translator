@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from trans_epub.config import Glossary
-from trans_epub.engines.base import ENGINES
-from trans_epub.engines.base import (
+from translator.config import Glossary
+from translator.engines.base import ENGINES
+from translator.engines.base import (
     EngineConfig,
     build_prompt,
     extract_translations,

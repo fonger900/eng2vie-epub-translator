@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from trans_epub.engines import openrouter
-from trans_epub.engines.base import ENGINES
+from translator.engines import openrouter
+from translator.engines.base import ENGINES
 
 _ENV_VARS = (
     "OPENROUTER_MODEL",

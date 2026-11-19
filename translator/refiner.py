@@ -18,7 +18,7 @@ import re
 # ── Quality checks ──────────────────────────────────────────────────────────
 
 # Emphasis tags that must be balanced
-_EMPHASIS_TAG_RE = re.compile(r"</?(em|strong|b|i)\b[^>]*>", re.I)
+_EMPHASIS_TAG_RE = re.compile(r"</?(em|strong|b|i)\b[^>]*>", re.IGNORECASE)
 
 # Minimum acceptable length ratio (translated / original)
 _MIN_LENGTH_RATIO = 0.3
@@ -126,7 +126,7 @@ def refine_texts(
             )
             if retry and len(retry) == 1:
                 result[i] = retry[0]
-        except Exception:
-            pass  # Keep original translation on retry failure
+        except Exception:  # noqa: BLE001, S110 - keep original on retry failure
+            pass
 
     return result
