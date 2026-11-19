@@ -2,12 +2,12 @@
 
 ## Overview
 
-`trans-epub` reads an EPUB, translates each chapter from English to Vietnamese via a configurable AI/cloud engine, and writes a new EPUB. The design is modular with clear separation of concerns across ~1,500 lines of source code.
+`eng2vie-epub-translator` reads an EPUB, translates each chapter from English to Vietnamese via a configurable AI/cloud engine, and writes a new EPUB. The design is modular with clear separation of concerns across ~1,500 lines of source code.
 
 ## Directory Layout
 
 ```
-trans_epub/
+translator/
 ├── __init__.py          # Public API re-exports (31 lines)
 ├── cli.py               # Argparse entry point, --version
 ├── config.py            # TOML + env var config (dataclass model)
@@ -77,15 +77,15 @@ Glossary loading only — no runtime config.
 
 Dataclasses: `CharacterEntry` (pronoun mapping, aliases, avoid list), `NarrativeEntry` (POV + narrator), `RelationshipEntry` (speaker→listener pair), `Glossary` (characters + relationships + terms).
 
-Helpers: `_find_file()` (search .trans-epub/ + ~/.config/...), `_load_toml()` (tomllib with fallback).
+Helpers: `_find_file()` (search .eng2vie-epub-translator/ + ~/.config/...), `_load_toml()` (tomllib with fallback).
 
 - `load_glossary(path=None)` — auto-detect or explicit path
 - `build_glossary_prompt(glossary)` — generate LLM prompt section for pronoun consistency
 
 Glossary auto-detection:
 1. Explicit `--glossary` path
-2. `./.trans-epub/glossary.toml`
-3. `~/.config/trans-epub/glossary.toml`
+2. `./.eng2vie-epub-translator/glossary.toml`
+3. `~/.config/eng2vie-epub-translator/glossary.toml`
 
 ### `epub_translator.py` (276 lines)
 
@@ -194,4 +194,3 @@ Each follows the same pattern:
 5. Register with `ENGINES[name] = EngineConfig(...)`
 
 All seven engines (gemini, deepseek, alibaba, openrouter, google, deepl, azure) use the shared `call_with_retry` from `base.py` for retry + proactive rate limiting. LLM engines pass `ENGINES[name].limiter` to enforce per-engine RPM limits.
-

@@ -1,4 +1,4 @@
-"""Configuration system for trans-epub.
+"""Configuration system for eng2vie-epub-translator.
 
 Glossary loading for character pronouns and terminology.
 """
@@ -13,8 +13,8 @@ from pathlib import Path
 
 # ── Search paths ──────────────────────────────────────────────────────────────
 
-_CONFIG_DIR = Path(".trans-epub")
-_USER_CONFIG_DIR = Path.home() / ".config" / "trans-epub"
+_CONFIG_DIR = Path(".eng2vie-epub-translator")
+_USER_CONFIG_DIR = Path.home() / ".config" / "eng2vie-epub-translator"
 
 
 def _find_file(filename: str) -> Path | None:

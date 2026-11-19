@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from trans_epub.epub_translator import _short_name, get_spine_items, translate_epub
-from trans_epub.engines.base import ENGINES, EngineConfig
+from translator.epub_translator import _short_name, get_spine_items, translate_epub
+from translator.engines.base import ENGINES, EngineConfig
 
 
 class TestShortName:
@@ -106,10 +106,10 @@ class TestTranslateEpub:
         )
 
         with (
-            patch("trans_epub.epub_translator.epub.read_epub", return_value=mock_book),
-            patch("trans_epub.epub_translator.epub.write_epub"),
-            patch("trans_epub.epub_translator.translate_toc_and_nav"),
-            patch("trans_epub.epub_translator._repack_epub"),
+            patch("translator.epub_translator.epub.read_epub", return_value=mock_book),
+            patch("translator.epub_translator.epub.write_epub"),
+            patch("translator.epub_translator.translate_toc_and_nav"),
+            patch("translator.epub_translator._repack_epub"),
             patch.dict(ENGINES, {"test": engine_cfg}),
         ):
             yield input_path, output_path
@@ -126,7 +126,7 @@ class TestTranslateEpub:
 
     def test_list_only_does_not_translate(self, mock_all):
         input_path, output_path = mock_all
-        with patch("trans_epub.epub_translator.console.print") as mock_print:
+        with patch("translator.epub_translator.console.print") as mock_print:
             translate_epub(input_path, output_path, engine="test", list_only=True)
             # New format includes char count column; just verify ch01 appears
             all_calls = " ".join(
@@ -149,8 +149,8 @@ class TestTranslateEpub:
         """Dry run should scan and report but skip translation entirely."""
         input_path, output_path = mock_all
         with (
-            patch("trans_epub.epub_translator.translate_toc_and_nav") as mock_toc,
-            patch("trans_epub.epub_translator.translate_html") as mock_html,
+            patch("translator.epub_translator.translate_toc_and_nav") as mock_toc,
+            patch("translator.epub_translator.translate_html") as mock_html,
         ):
             translate_epub(input_path, output_path, engine="test", dry_run=True)
 
@@ -161,7 +161,7 @@ class TestTranslateEpub:
     def test_verbose_flag_sets_module_var(self, mock_all):
         """--verbose should enable verbose mode in base module."""
         input_path, output_path = mock_all
-        with patch("trans_epub.epub_translator.set_verbose") as mock_set:
+        with patch("translator.epub_translator.set_verbose") as mock_set:
             translate_epub(input_path, output_path, engine="test", verbose=True)
             mock_set.assert_called_once_with(True)
 
@@ -200,10 +200,10 @@ class TestTranslateEpub:
         engines_patch = patch.dict(ENGINES, dict(test=cfg))
 
         with (
-            patch("trans_epub.epub_translator.epub.read_epub", return_value=book),
-            patch("trans_epub.epub_translator.epub.write_epub"),
-            patch("trans_epub.epub_translator.translate_toc_and_nav"),
-            patch("trans_epub.epub_translator._repack_epub"),
+            patch("translator.epub_translator.epub.read_epub", return_value=book),
+            patch("translator.epub_translator.epub.write_epub"),
+            patch("translator.epub_translator.translate_toc_and_nav"),
+            patch("translator.epub_translator._repack_epub"),
             engines_patch,
         ):
             translate_epub(input_path, output_path, engine="test", threads=1)

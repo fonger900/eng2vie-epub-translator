@@ -1,7 +1,7 @@
-# trans-epub
+# eng2vie-epub-translator
 
 [![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/github/license/fonger900/trans-epub)](LICENSE)
+[![License](https://img.shields.io/github/license/fonger900/eng2vie-epub-translator)](LICENSE)
 
 ![terminal image](./transepub.png)
 
@@ -28,8 +28,8 @@ Translate EPUB books from English to Vietnamese using AI translation engines.
 ## Installation
 
 ```bash
-git clone https://github.com/fonger900/trans-epub.git
-cd trans-epub
+git clone https://github.com/fonger900/eng2vie-epub-translator.git
+cd eng2vie-epub-translator
 uv sync
 cp .env.example .env
 # Edit .env with your API keys
@@ -39,46 +39,46 @@ cp .env.example .env
 
 ```bash
 # Basic translation (auto-detects engine from available API keys)
-uv run trans-epub book.epub
+uv run eng2vie-epub-translator book.epub
 
 # With specific engine
-uv run trans-epub book.epub -e alibaba
+uv run eng2vie-epub-translator book.epub -e alibaba
 
 # Translate specific chapters
-uv run trans-epub book.epub -i 1-5
+uv run eng2vie-epub-translator book.epub -i 1-5
 
 # List chapters with char counts
-uv run trans-epub book.epub --list
+uv run eng2vie-epub-translator book.epub --list
 
 # Custom output path
-uv run trans-epub book.epub -o translated.epub
+uv run eng2vie-epub-translator book.epub -o translated.epub
 
 # Parallel threads
-uv run trans-epub book.epub -t 8
+uv run eng2vie-epub-translator book.epub -t 8
 
 # Creativity/temperature for LLM engines
-uv run trans-epub book.epub --creativity 0.5
+uv run eng2vie-epub-translator book.epub --creativity 0.5
 
 # Glossary for consistent character pronouns and terminology
-uv run trans-epub book.epub -g glossary.toml
+uv run eng2vie-epub-translator book.epub -g glossary.toml
 
 # Fresh translation (ignore cache)
-uv run trans-epub book.epub --fresh
+uv run eng2vie-epub-translator book.epub --fresh
 
 # Dry-run: validate glossary, count chars, estimate cost, scan glossary matches
-uv run trans-epub book.epub --dry-run
+uv run eng2vie-epub-translator book.epub --dry-run
 
 # Override API rate limit (paid tier)
-uv run trans-epub book.epub --rpm 60
+uv run eng2vie-epub-translator book.epub --rpm 60
 
 # Set per-chapter timeout (default: 600s)
-uv run trans-epub book.epub --chapter-timeout 300
+uv run eng2vie-epub-translator book.epub --chapter-timeout 300
 
 # Verbose per-request logging
-uv run trans-epub book.epub --verbose
+uv run eng2vie-epub-translator book.epub --verbose
 
 # Extra prompt instructions from file
-uv run trans-epub book.epub -p instructions.txt
+uv run eng2vie-epub-translator book.epub -p instructions.txt
 ```
 
 ## Configuration
@@ -109,18 +109,18 @@ Defaults are built into the CLI:
 - `--threads 4` — concurrent translation threads
 - `--creativity` — LLM temperature (engine defaults if not set)
 
-No config file needed. Use CLI flags or environment variables (`TRANS_EPUB_ENGINE`, `TRANS_EPUB_THREADS`, `TRANS_EPUB_CREATIVITY`).
+No config file needed. Use CLI flags or environment variables (`translator_ENGINE`, `translator_THREADS`, `translator_CREATIVITY`).
 
 ### Glossary (pronoun matrix + terminology)
 
 Ensure consistent character voices with a glossary:
 
 ```bash
-# Auto-detected from .trans-epub/glossary.toml or ~/.config/trans-epub/glossary.toml
-uv run trans-epub book.epub
+# Auto-detected from .eng2vie-epub-translator/glossary.toml or ~/.config/eng2vie-epub-translator/glossary.toml
+uv run eng2vie-epub-translator book.epub
 
 # Explicit path
-uv run trans-epub book.epub -g my-glossary.toml
+uv run eng2vie-epub-translator book.epub -g my-glossary.toml
 ```
 
 Glossary format (`.toml`):
@@ -148,7 +148,7 @@ address = "em"          # John calls Mary this way
 "the King" = "Nhà vua"
 ```
 
-See [.trans-epub/glossary.example.toml](.trans-epub/glossary.example.toml) for all options.
+See [.eng2vie-epub-translator/glossary.example.toml](.eng2vie-epub-translator/glossary.example.toml) for all options.
 
 ### Fixing mixed Vietnamese pronouns
 
@@ -173,7 +173,7 @@ prompt/glossary.
 Test one chapter before paying for a full run:
 
 ```bash
-uv run trans-epub book.epub test-ch1.epub -i 1 --fresh --creativity 0.2
+uv run eng2vie-epub-translator book.epub test-ch1.epub -i 1 --fresh --creativity 0.2
 ```
 
 Lower creativity (`0.2-0.3`) reduces pronoun variation. The glossary is

@@ -5,7 +5,7 @@
 Engines register themselves via a side-effect import pattern:
 
 ```python
-# trans_epub/engines/__init__.py  — imports all engine modules
+# translator/engines/__init__.py  — imports all engine modules
 from .gemini import gemini_translate
 from .azure import azure_translate
 # ...
@@ -21,7 +21,7 @@ ENGINES["gemini"] = EngineConfig(
 ```
 
 The `ENGINES` dict (defined in `base.py`) is the single registry. Adding a new engine requires:
-1. Create `trans_epub/engines/{name}.py`
+1. Create `translator/engines/{name}.py`
 2. Define a translate function
 3. Register an `EngineConfig`
 4. Import the module in `engines/__init__.py`

@@ -1,8 +1,8 @@
-# Translation Glossary for trans-epub
+# Translation Glossary for eng2vie-epub-translator
 #
 # This file ensures consistent Vietnamese translations across chapters.
-# Place this file at: .trans-epub/glossary.toml (project-local)
-# Or at: ~/.config/trans-epub/glossary.toml (user-global)
+# Place this file at: .eng2vie-epub-translator/glossary.toml (project-local)
+# Or at: ~/.config/eng2vie-epub-translator/glossary.toml (user-global)
 #
 # Auto-detected on every run, or pass explicitly: --glossary path/to/glossary.toml
 #

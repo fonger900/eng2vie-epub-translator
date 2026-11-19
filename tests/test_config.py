@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from trans_epub.config import (
+from translator.config import (
     CharacterEntry,
     Glossary,
     _find_file,
@@ -16,17 +16,17 @@ from trans_epub.config import (
 class TestFindFile:
     def test_returns_path_when_exists(self, tmp_path, monkeypatch):
         (tmp_path / "glossary.toml").write_text("")
-        monkeypatch.setattr("trans_epub.config._CONFIG_DIR", tmp_path)
+        monkeypatch.setattr("translator.config._CONFIG_DIR", tmp_path)
         result = _find_file("glossary.toml")
         assert result is not None
         assert result.name == "glossary.toml"
 
     def test_returns_none_when_not_found(self, monkeypatch):
         monkeypatch.setattr(
-            "trans_epub.config._CONFIG_DIR", Path("/nonexistent_dir_xyz")
+            "translator.config._CONFIG_DIR", Path("/nonexistent_dir_xyz")
         )
         monkeypatch.setattr(
-            "trans_epub.config._USER_CONFIG_DIR", Path("/nonexistent_dir_xyz")
+            "translator.config._USER_CONFIG_DIR", Path("/nonexistent_dir_xyz")
         )
         assert _find_file("glossary.toml") is None
 
@@ -173,7 +173,7 @@ class TestBuildGlossaryPrompt:
         assert "học máy" in prompt
 
     def test_narrative_and_relationships_in_prompt(self):
-        from trans_epub.config import NarrativeEntry, RelationshipEntry
+        from translator.config import NarrativeEntry, RelationshipEntry
 
         glossary = Glossary(
             narrative=NarrativeEntry(
@@ -211,7 +211,7 @@ class TestBuildGlossaryPrompt:
         assert build_glossary_prompt(Glossary()) == ""
 
     def test_narrative_only_glossary_is_not_empty(self):
-        from trans_epub.config import NarrativeEntry
+        from translator.config import NarrativeEntry
 
         glossary = Glossary(narrative=NarrativeEntry(pov="first-person"))
         assert not glossary.is_empty()
@@ -220,7 +220,7 @@ class TestBuildGlossaryPrompt:
 
 class TestValidateGlossary:
     def test_no_warnings_for_valid_glossary(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         glossary = Glossary(
             characters={"John": CharacterEntry(address="anh")},
@@ -230,35 +230,35 @@ class TestValidateGlossary:
         assert len(warnings) == 0
 
     def test_warns_on_empty_character(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         glossary = Glossary(characters={"Ghost": CharacterEntry()})
         warnings = validate_glossary(glossary)
         assert any("Ghost" in w for w in warnings)
 
     def test_warns_on_empty_term_key(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         glossary = Glossary(terms={"": "value"})
         warnings = validate_glossary(glossary)
         assert any("empty English" in w for w in warnings)
 
     def test_warns_on_empty_term_value(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         glossary = Glossary(terms={"hello": ""})
         warnings = validate_glossary(glossary)
         assert any("hello" in w for w in warnings)
 
     def test_warns_on_short_term(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         glossary = Glossary(terms={"a": "một"})
         warnings = validate_glossary(glossary)
         assert any("short" in w.lower() for w in warnings)
 
     def test_warns_on_character_without_pronouns(self):
-        from trans_epub.config import validate_glossary
+        from translator.config import validate_glossary
 
         # Character with only a note, no address or self-ref
         glossary = Glossary(characters={"Bob": CharacterEntry(note="side character")})
@@ -266,14 +266,14 @@ class TestValidateGlossary:
         assert any("Bob" in w for w in warnings)
 
     def test_warns_on_first_person_without_narrator(self):
-        from trans_epub.config import NarrativeEntry, validate_glossary
+        from translator.config import NarrativeEntry, validate_glossary
 
         glossary = Glossary(narrative=NarrativeEntry(pov="first-person"))
         warnings = validate_glossary(glossary)
         assert any("narrator pronoun" in w for w in warnings)
 
     def test_no_warning_for_first_person_with_narrator(self):
-        from trans_epub.config import NarrativeEntry, validate_glossary
+        from translator.config import NarrativeEntry, validate_glossary
 
         glossary = Glossary(
             narrative=NarrativeEntry(pov="first-person", narrator="tôi")
@@ -284,28 +284,28 @@ class TestValidateGlossary:
 
 class TestScanGlossaryMatches:
     def test_finds_term_in_text(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(terms={"hello": "xin chào"})
         matches = scan_glossary_matches(glossary, ["hello world", "say hello"])
         assert matches["hello"] == 2
 
     def test_case_insensitive_matching(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(terms={"Hello": "xin chào"})
         matches = scan_glossary_matches(glossary, ["HELLO world", "Say hello"])
         assert matches["Hello"] == 2
 
     def test_term_not_found_returns_zero(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(terms={"nonexistent": "không tồn tại"})
         matches = scan_glossary_matches(glossary, ["some text"])
         assert matches["nonexistent"] == 0
 
     def test_finds_character_name(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(characters={"Alice": CharacterEntry(address="cô")})
         matches = scan_glossary_matches(
@@ -314,7 +314,7 @@ class TestScanGlossaryMatches:
         assert matches["[character] Alice"] == 2
 
     def test_finds_character_aliases(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(
             characters={"Redrick Schuhart": CharacterEntry(aliases=["Red", "Schuhart"])}
@@ -326,14 +326,14 @@ class TestScanGlossaryMatches:
         assert matches["[character] Redrick Schuhart"] == 3
 
     def test_alias_does_not_match_inside_another_word(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(characters={"Red": CharacterEntry(aliases=["Red"])})
         matches = scan_glossary_matches(glossary, ["Redrick was bored."])
         assert matches["[character] Red"] == 0
 
     def test_empty_text_no_matches(self):
-        from trans_epub.config import scan_glossary_matches
+        from translator.config import scan_glossary_matches
 
         glossary = Glossary(terms={"hello": "xin chào"})
         matches = scan_glossary_matches(glossary, [])

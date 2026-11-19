@@ -1,1 +1,1 @@
-"""Tests for trans-epub."""
+"""Tests for eng2vie-epub-translator."""

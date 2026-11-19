@@ -1,5 +1,5 @@
 """
-trans_epub — EPUB EN→VI translator package.
+translator — EPUB EN→VI translator package.
 
 Public API:
   translate_epub   — translate an EPUB file

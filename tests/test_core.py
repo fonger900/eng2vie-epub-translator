@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 
-from trans_epub.html_translator import translate_html
+from translator.html_translator import translate_html
 
 
 class TestTranslateHtml:
@@ -54,7 +54,7 @@ class TestTranslateHtml:
 
         cfg.translate = translate
 
-        with patch("trans_epub.html_translator.ENGINES") as eng:
+        with patch("translator.html_translator.ENGINES") as eng:
             eng.__getitem__.return_value = cfg
             html = b"<html><body><p>AAAA</p><p>BBBB</p><p>CCCC</p></body></html>"
             result, _ = translate_html(html, "x")
@@ -75,7 +75,7 @@ class TestTranslateHtml:
 
         cfg.translate = translate
 
-        with patch("trans_epub.html_translator.ENGINES") as eng:
+        with patch("translator.html_translator.ENGINES") as eng:
             eng.__getitem__.return_value = cfg
             html = b"<html><body><p>A</p><p>B</p><p>C</p></body></html>"
             translate_html(html, "x")

@@ -29,7 +29,7 @@ jobs:
         run: uv sync --group dev
 
       - name: Check entry point works
-        run: uv run trans-epub --version
+        run: uv run eng2vie-epub-translator --version
 
       - name: Run tests
         run: uv run pytest tests/ -v --tb=short
@@ -51,10 +51,10 @@ jobs:
         run: uv sync --group dev
 
       - name: Ruff check
-        run: uv run ruff check trans_epub/
+        run: uv run ruff check translator/
 
       - name: Ruff format check
-        run: uv run ruff format --check trans_epub/
+        run: uv run ruff format --check translator/
 
   release:
     name: Release to PyPI

@@ -90,7 +90,7 @@ total_input_tokens += (c_chars / 4.0) + (prompt_chars / 2.0) * num_batches
 
 **Actual observation**: prompt_chars / 2.0 is too optimistic. Should be:
 ```python
-# System prompt is ~1,200-2,000 tokens for trans-epub
+# System prompt is ~1,200-2,000 tokens for eng2vie-epub-translator
 # Not just prompt_chars / 2
 total_input_tokens += (c_chars / 4.0) + (1200) * num_batches  # Fixed overhead
 ```
@@ -130,7 +130,7 @@ def estimate_gemini_cost(
     
     chapters = [chars] if isinstance(chars, int) else chapters
     
-    # EMPIRICAL ratios from trans-epub users:
+    # EMPIRICAL ratios from eng2vie-epub-translator users:
     # - Neurocomancer (448K chars, actual 134K in + 159K out tokens)
     # - 302K pending chars = 2.26 chars/token input, 1.90 chars/token output
     

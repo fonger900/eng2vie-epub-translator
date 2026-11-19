@@ -14,5 +14,5 @@ wheels/
 .env
 *.txt
 
-# Project translation prompt (auto-loaded by trans-epub)
-!.trans-epub/prompt.txt
+# Project translation prompt (auto-loaded by eng2vie-epub-translator)
+!.eng2vie-epub-translator/prompt.txt

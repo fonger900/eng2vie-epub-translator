@@ -6,10 +6,10 @@ import time
 from unittest.mock import patch
 
 
-from trans_epub.engines.base import RateLimiter
-from trans_epub.epub_translator import _load_cache, _save_cache, _CACHE_HASH_KEY
-from trans_epub.html_translator import count_translatable_chars
-from trans_epub.toc import _is_toc_candidate, _toc_href_to_relative
+from translator.engines.base import RateLimiter
+from translator.epub_translator import _load_cache, _save_cache, _CACHE_HASH_KEY
+from translator.html_translator import count_translatable_chars
+from translator.toc import _is_toc_candidate, _toc_href_to_relative
 
 
 # ── _load_cache ──────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ class TestLoadCache:
         cache_data = {"ch01": "old translation", _CACHE_HASH_KEY: "oldhash"}
         cache_path.write_text(json.dumps(cache_data))
 
-        with patch("trans_epub.epub_translator.console.print") as mock_print:
+        with patch("translator.epub_translator.console.print") as mock_print:
             result = _load_cache(cache_path, str(epub_path), fresh=False)
 
         assert result == {"ch01": "old translation"}
@@ -71,7 +71,7 @@ class TestLoadCache:
         cache_path = tmp_path / "test.cache.json"
         cache_path.write_text('{"ch01": "translated"}')  # no hash key
 
-        with patch("trans_epub.epub_translator.console.print") as mock_print:
+        with patch("translator.epub_translator.console.print") as mock_print:
             result = _load_cache(cache_path, "nonexistent.epub", fresh=False)
 
         assert result == {"ch01": "translated"}

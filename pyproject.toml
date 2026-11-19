@@ -1,5 +1,5 @@
 [project]
-name = "trans-epub"
+name = "eng2vie-epub-translator"
 version = "1.5.4"
 description = "Translate EPUB books from English to Vietnamese using various AI engines"
 readme = "README.md"
@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.scripts]
-trans-epub = "trans_epub.cli:main"
+eng2vie-epub-translator = "translator.cli:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,4 +1,4 @@
-"""Command-line interface for trans-epub."""
+"""Command-line interface for eng2vie-epub-translator."""
 
 import argparse
 import os
@@ -12,7 +12,7 @@ from .epub_translator import translate_epub
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("trans-epub")
+    __version__ = version("eng2vie-epub-translator")
 except PackageNotFoundError:
     __version__ = "unknown"
 
@@ -96,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         "--glossary",
         "-g",
         type=Path,
-        help="Path to glossary TOML file for character pronouns and terms (auto-detects .trans-epub/glossary.toml)",
+        help="Path to glossary TOML file for character pronouns and terms (auto-detects .eng2vie-epub-translator/glossary.toml)",
     )
     parser.add_argument(
         "--fresh",
@@ -142,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
         "--prompt",
         "-p",
         type=Path,
-        help="Path to a text file with additional prompt instructions for this book (auto-detects .trans-epub/prompt.txt)",
+        help="Path to a text file with additional prompt instructions for this book (auto-detects .eng2vie-epub-translator/prompt.txt)",
     )
     args = parser.parse_args(argv)
 
